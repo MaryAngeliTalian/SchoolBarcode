@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>School Barcode Scanner Log</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>School Barcode Scanner Log + Connected to Google Sheets</h2>
+    <p>Allow camera access when prompted.</p>
+
+    <div class="input-section">
+      <label for="nameInput"><b>Enter Name:</b></label>
+      <input type="text" id="nameInput" placeholder="Type your name...">
+    </div>
+
+    <div id="reader"></div>
+
+    <h3>Scan Log</h3>
+    <div class="table-container">
+      <table id="log">
+        <tr>
+          <th>Name</th>
+          <th>ID Number</th>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const SHEETS_URL = "https://script.google.com/macros/s/AKfycbzmE3cHM6trDqlWnUPhMermHQ0Nww77gNedLSkFH4Rpx5VWOc8YBy8UhEtnQTskKfNh/exec";
+
+    function addLog(name, idNumber) {
+      const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString();
+
+      // Add to local table
+      const table = document.getElementById("log");
+      const row = table.insertRow(-1);
+      row.insertCell(0).textContent = name || "N/A";
+      row.insertCell(1).textContent = idNumber;
+      row.insertCell(2).textContent = date;
+      row.insertCell(3).textContent = time;
+
+      // Send to Google Sheets
+      fetch(SHEETS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name || "N/A",
+          id: idNumber,
+          date: date,
+          time: time
+        })
+      });
+    }
+
+    function onScanSuccess(decodedText) {
+      const name = document.getElementById("nameInput").value.trim();
+
+      const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
+      if (confirmScan) {
+        addLog(name, decodedText);
+        alert("Scanned successfully!");
+      } else {
+        alert("Scan cancelled.");
+      }
+    }
+
+    // Initialize scanner
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+</body>
+</html>
