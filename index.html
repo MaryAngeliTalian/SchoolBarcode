@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>🎓 School Barcode Scanner Log (Google Sheets Connected)</h2>
+    <h2>School Barcode Scanner Log (Google Sheets Connected)</h2>
     <p>Allow camera access when prompted.</p>
 
     <div class="input-section">
@@ -32,10 +32,8 @@
   </div>
 
   <script>
-    // 🔗 Replace this with your Google Apps Script Web App URL
     const SHEETS_URL = "https://script.google.com/macros/s/AKfycbzmE3cHM6trDqlWnUPhMermHQ0Nww77gNedLSkFH4Rpx5VWOc8YBy8UhEtnQTskKfNh/exec";
 
-    // ✅ Add entry to table and send to Google Sheets
     function addLog(name, idNumber) {
       const now = new Date();
       const date = now.toLocaleDateString();
@@ -63,7 +61,7 @@
       });
     }
 
-    // ✅ Called when a barcode is successfully scanned
+
     function onScanSuccess(decodedText) {
       const name = document.getElementById("nameInput").value.trim();
       const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
@@ -75,10 +73,10 @@
       }
     }
 
-    // ✅ Initialize scanner (optimized for 1D barcodes like CODE_128)
+
     const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-      fps: 5, // slower = clearer for 1D barcodes
-      qrbox: { width: 400, height: 120 }, // wider, shallower box fits your ID barcode
+      fps: 5, 
+      qrbox: { width: 400, height: 120 },
       rememberLastUsedCamera: true,
       formatsToSupport: [
         Html5QrcodeSupportedFormats.CODE_128,
