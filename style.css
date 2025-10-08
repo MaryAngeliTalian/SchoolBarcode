@@ -1,13 +1,13 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #f8f9fa;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(180deg, #eaf4fb, #ffffff);
   color: #333;
   margin: 0;
   padding: 0;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 850px;
   margin: 40px auto;
   text-align: center;
   padding: 20px;
@@ -15,8 +15,8 @@ body {
 
 h2 {
   color: #2c3e50;
-  font-size: 1.8rem;
-  margin-bottom: 10px;
+  font-size: 1.9rem;
+  margin-bottom: 8px;
 }
 
 p {
@@ -25,20 +25,28 @@ p {
   margin-bottom: 25px;
 }
 
+.scanner-box {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
 .input-section {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 label {
-  font-weight: bold;
+  font-weight: 600;
   margin-right: 8px;
 }
 
 input[type="text"] {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  width: 200px;
+  width: 220px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
@@ -48,14 +56,69 @@ input[type="text"]:focus {
   border-color: #3498db;
 }
 
+#reader-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #reader {
-  width: 420px;
-  margin: 0 auto 25px auto;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 480px;
+  height: 320px;
+  border-radius: 12px;
+  background-color: #000;
+  border: 2px solid #3498db;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+#reader.scanning::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 0, 0, 0.8);
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  0% { top: 0; }
+  50% { top: calc(100% - 2px); }
+  100% { top: 0; }
+}
+
+#loadingMsg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: none;
+  z-index: 2;
+}
+
+#scanAnotherBtn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#scanAnotherBtn:hover {
+  background-color: #2177b8;
+  transform: scale(1.05);
 }
 
 h3 {
@@ -74,9 +137,9 @@ table {
   max-width: 700px;
   border-collapse: collapse;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 th, td {
@@ -92,17 +155,18 @@ th {
 }
 
 tr:nth-child(even) {
-  background-color: #f2f2f2;
+  background-color: #f8f9fa;
 }
 
 tr:hover {
-  background-color: #eaf4fb;
+  background-color: #ecf5ff;
   transition: background-color 0.2s ease;
 }
 
 @media (max-width: 600px) {
   #reader {
-    width: 90%;
+    width: 95%;
+    height: 240px;
   }
 
   input[type="text"] {
@@ -110,7 +174,6 @@ tr:hover {
   }
 
   table {
-    width: 100%;
     font-size: 0.9rem;
   }
 }

@@ -4,23 +4,28 @@
   <meta charset="UTF-8">
   <title>School Barcode Scanner Log</title>
   <link rel="stylesheet" href="style.css">
-  <!-- ✅ QuaggaJS CDN -->
   <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>School Barcode Scanner Log (Google Sheets Connected)</h2>
-    <p>Allow camera access when prompted.</p>
+    <h2>School Barcode Scanner Log</h2>
+    <p>Please allow camera access to start scanning.</p>
 
-    <div class="input-section">
-      <label for="nameInput"><b>Enter Name:</b></label>
-      <input type="text" id="nameInput" placeholder="Type your name...">
+    <div class="scanner-box">
+      <div class="input-section">
+        <label for="nameInput"><b>Enter Name:</b></label>
+        <input type="text" id="nameInput" placeholder="Type your name...">
+      </div>
+
+      <div id="reader-container">
+        <div id="reader" class="scanning"></div>
+        <div id="loadingMsg">Initializing camera...</div>
+      </div>
+
+      <button id="scanAnotherBtn" style="display:none;">🔁 Scan Another</button>
     </div>
 
-    <!-- ✅ QuaggaJS camera view -->
-    <div id="reader"></div>
-
-    <h3>📋 Scan Log</h3>
+    <h3>Scan Log</h3>
     <div class="table-container">
       <table id="log">
         <tr>
@@ -34,7 +39,11 @@
   </div>
 
   <script>
-    const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwEcI4PXETKJLTHI2Z648XsV3ONHDDXYlhjutDyVxPUWzpj22y_-AmAA5_g9qQAFbJG/exec";
+    const SHEETS_URL = "https://script.google.com/macros/s/AKfycbz5ImcplB3Q4JnjHdYLZj4qA04Cg7U0g0-jeaRmEzORG9U8WwsvbWbpHOZPv5DFj2uv/exec";
+
+    const reader = document.getElementById("reader");
+    const loadingMsg = document.getElementById("loadingMsg");
+    const scanAnotherBtn = document.getElementById("scanAnotherBtn");
 
     function addLog(name, idNumber) {
       const now = new Date();
@@ -61,39 +70,38 @@
       });
     }
 
-    // ✅ Initialize QuaggaJS
     function startScanner() {
+      loadingMsg.style.display = "block";
+      scanAnotherBtn.style.display = "none";
+
       Quagga.init({
         inputStream: {
           name: "Live",
           type: "LiveStream",
-          target: document.querySelector("#reader"),
-          constraints: {
-            facingMode: "environment" // use back camera if available
-          }
+          target: reader,
+          constraints: { facingMode: "environment" }
         },
-        decoder: {
-          readers: [
-            "code_128_reader",
-            "code_39_reader",
-            "ean_reader"
-          ]
-        },
+        decoder: { readers: ["code_128_reader", "code_39_reader", "ean_reader"] },
         locate: true
       }, function(err) {
         if (err) {
           console.error("Quagga init error:", err);
           alert("Camera initialization failed.");
+          loadingMsg.textContent = "Unable to access camera.";
+          scanAnotherBtn.style.display = "block";
           return;
         }
-        console.log("Quagga initialized successfully.");
+
+        loadingMsg.style.display = "none";
+        reader.classList.add("scanning");
         Quagga.start();
+        console.log("Quagga initialized successfully.");
       });
 
-      // ✅ When barcode detected
       Quagga.onDetected((data) => {
         const decodedText = data.codeResult.code;
-        Quagga.stop(); // stop scanner after first detection
+        Quagga.stop();
+        reader.classList.remove("scanning");
 
         const name = document.getElementById("nameInput").value.trim();
         const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
@@ -105,14 +113,15 @@
           alert("Scan cancelled.");
         }
 
-        // Restart scanner after a short delay
-        setTimeout(() => {
-          Quagga.start();
-        }, 1500);
+        scanAnotherBtn.style.display = "inline-block";
       });
     }
 
-    // ✅ Start camera on load
+    scanAnotherBtn.addEventListener("click", () => {
+      reader.classList.add("scanning");
+      startScanner();
+    });
+
     window.addEventListener("load", startScanner);
   </script>
 </body>
