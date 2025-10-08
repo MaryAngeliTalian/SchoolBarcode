@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>School Barcode Scanner Log</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- ✅ QuaggaJS CDN -->
+  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -16,6 +17,7 @@
       <input type="text" id="nameInput" placeholder="Type your name...">
     </div>
 
+    <!-- ✅ QuaggaJS camera view -->
     <div id="reader"></div>
 
     <h3>📋 Scan Log</h3>
@@ -39,7 +41,6 @@
       const date = now.toLocaleDateString();
       const time = now.toLocaleTimeString();
 
-      // Add to local table
       const table = document.getElementById("log");
       const row = table.insertRow(-1);
       row.insertCell(0).textContent = name || "N/A";
@@ -47,7 +48,6 @@
       row.insertCell(2).textContent = date;
       row.insertCell(3).textContent = time;
 
-      // Send to Google Sheets
       fetch(SHEETS_URL, {
         method: "POST",
         mode: "no-cors",
@@ -61,31 +61,59 @@
       });
     }
 
+    // ✅ Initialize QuaggaJS
+    function startScanner() {
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: document.querySelector("#reader"),
+          constraints: {
+            facingMode: "environment" // use back camera if available
+          }
+        },
+        decoder: {
+          readers: [
+            "code_128_reader",
+            "code_39_reader",
+            "ean_reader"
+          ]
+        },
+        locate: true
+      }, function(err) {
+        if (err) {
+          console.error("Quagga init error:", err);
+          alert("Camera initialization failed.");
+          return;
+        }
+        console.log("Quagga initialized successfully.");
+        Quagga.start();
+      });
 
-    function onScanSuccess(decodedText) {
-      const name = document.getElementById("nameInput").value.trim();
-      const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
-      if (confirmScan) {
-        addLog(name, decodedText);
-        alert("Scanned successfully!");
-      } else {
-        alert("Scan cancelled.");
-      }
+      // ✅ When barcode detected
+      Quagga.onDetected((data) => {
+        const decodedText = data.codeResult.code;
+        Quagga.stop(); // stop scanner after first detection
+
+        const name = document.getElementById("nameInput").value.trim();
+        const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
+
+        if (confirmScan) {
+          addLog(name, decodedText);
+          alert("Scanned successfully!");
+        } else {
+          alert("Scan cancelled.");
+        }
+
+        // Restart scanner after a short delay
+        setTimeout(() => {
+          Quagga.start();
+        }, 1500);
+      });
     }
 
-
-    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-      fps: 3, 
-      qrbox: { width: 400, height: 120 },
-      rememberLastUsedCamera: true,
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13
-      ]
-    });
-
-    html5QrcodeScanner.render(onScanSuccess);
+    // ✅ Start camera on load
+    window.addEventListener("load", startScanner);
   </script>
 </body>
 </html>
