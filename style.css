@@ -13,9 +13,15 @@ body {
   padding: 20px;
 }
 
-h2 {
+h1 {
   color: #2c3e50;
-  font-size: 1.9rem;
+  font-size: 2.9rem;
+  margin-bottom: 8px;
+}
+
+h2 {
+  color: #33699f;
+  font-size: 1.6rem;
   margin-bottom: 8px;
 }
 
