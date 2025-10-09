@@ -36,7 +36,7 @@
   <script>
     const SHEETS_URL = "https://script.google.com/macros/s/AKfycbz5ImcplB3Q4JnjHdYLZj4qA04Cg7U0g0-jeaRmEzORG9U8WwsvbWbpHOZPv5DFj2uv/exec";
 
-    //student(ID - Name)
+    //Student data ID - Name
     const students = {
       "20140004428": "Matthew Ethan M. Abadiano",
       "20240031427": "Bridgette Marie D. Abastas",
@@ -80,7 +80,8 @@
       "20240030219": "Vaneza Jane L. Zamoranos"
     };
 
-    const scannedIds = new Set(); //para ma prevent ang duplicate scans
+    //Keep track of scanned IDs (avoid duplicates)
+    const scannedIds = new Set();
 
     const reader = document.getElementById("reader");
     const loadingMsg = document.getElementById("loadingMsg");
@@ -98,7 +99,7 @@
       row.insertCell(2).textContent = date;
       row.insertCell(3).textContent = time;
 
-      //to Google Sheet
+      // Send data to Google Sheets
       fetch(SHEETS_URL, {
         method: "POST",
         mode: "no-cors",
@@ -123,12 +124,14 @@
           target: reader,
           constraints: { facingMode: "environment" }
         },
-        decoder: { readers: ["code_128_reader", "code_39_reader", "ean_reader"] },
+        decoder: {
+          readers: ["code_128_reader", "code_39_reader", "ean_reader"]
+        },
         locate: true
       }, function(err) {
         if (err) {
           console.error("Quagga init error:", err);
-          alert("Camera initialization failed.");
+          alert("Camera initialization failed. Please refresh or check permissions.");
           loadingMsg.textContent = "Unable to access camera.";
           scanAnotherBtn.style.display = "block";
           return;
@@ -142,8 +145,9 @@
 
       Quagga.onDetected((data) => {
         const idNumber = data.codeResult.code.trim();
+        console.log("Detected ID:", idNumber);
 
-        // Para ma prevent ang multiple detections of the same code
+        // Prevent multiple detections of same code
         if (scannedIds.has(idNumber)) {
           alert(`ID ${idNumber} has already been scanned!`);
           return;
@@ -160,7 +164,7 @@
         reader.classList.remove("scanning");
 
         addLog(name, idNumber);
-        alert(`Scanned: ${name} (${idNumber})`);
+        alert(`Scanned successfully:\n${name} (${idNumber})`);
         scanAnotherBtn.style.display = "inline-block";
       });
     }
