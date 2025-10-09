@@ -12,11 +12,6 @@
     <p>Please allow camera access to start scanning.</p>
 
     <div class="scanner-box">
-      <div class="input-section">
-        <label for="nameInput"><b>Enter Name:</b></label>
-        <input type="text" id="nameInput" placeholder="Type your name...">
-      </div>
-
       <div id="reader-container">
         <div id="reader" class="scanning"></div>
         <div id="loadingMsg">Initializing camera...</div>
@@ -41,6 +36,52 @@
   <script>
     const SHEETS_URL = "https://script.google.com/macros/s/AKfycbz5ImcplB3Q4JnjHdYLZj4qA04Cg7U0g0-jeaRmEzORG9U8WwsvbWbpHOZPv5DFj2uv/exec";
 
+    //student(ID - Name)
+    const students = {
+      "20140004428": "Matthew Ethan M. Abadiano",
+      "20240031427": "Bridgette Marie D. Abastas",
+      "20180015366": "Glysalen L. Abogaa",
+      "00201131743": "Florido III S. Akut",
+      "20200020945": "Zuhair Alauya",
+      "20240029697": "Sittie Naylah D. Ariong",
+      "20240029980": "Phillip Jaspher A. Baja",
+      "20220025798": "Julia Paula I. Bandivas",
+      "20240030612": "Jade Andrea B. Borcelas",
+      "20240030286": "Reginald Kristoff M. Cahig",
+      "2013000679": "Kristine Joy Capao",
+      "20200020342": "Gwyneth C. Daayata",
+      "20200020048": "Mika Arabella R. Dacut",
+      "20170012479": "Mohammad Dipatuan",
+      "00201120194": "Ralph B. Delicana Jr",
+      "20200020151": "Jamie Iñigo S. Dapal Jr",
+      "20200019713": "Andren Marie B. Eligan",
+      "20220026221": "Eric Juan L. Emano",
+      "20200019971": "Jeff Wilson B. Galinada",
+      "00201120182": "Maria Patrizia S. Go",
+      "00201130543": "Sairish Guiling",
+      "20200020346": "Abdul Hakim H. Hadji Omar",
+      "20240029940": "Miguel Gabriel C. Hernandez",
+      "00201210663": "Jathena Verra B. Ibarra",
+      "20240030932": "Althea Gaia Lagos",
+      "00201131156": "Niña Margarette P. Ledesma",
+      "20240030603": "Josh Van Manuel Lozano",
+      "20240029864": "Elreina Lucilio",
+      "00201131410": "Nicole Lugtu",
+      "20200020702": "Luke Ode Maguyon",
+      "20160010435": "Klyde Xedric S. Meneses",
+      "20200020142": "Hannah Faith U. Micabalo",
+      "20140006704": "Jet Mundo",
+      "20170011908": "Giam Paolo P. Olaer",
+      "20190018486": "Muhammad Jasim D. Pandi",
+      "20170011882": "Kish Micah G. Pelisco",
+      "20240029897": "Reeze Vievien R. Sacote",
+      "20200019906": "Liancel Marie S. Valencia",
+      "20200020562": "Patrowe Trishfel Yamba",
+      "20240030219": "Vaneza Jane L. Zamoranos"
+    };
+
+    const scannedIds = new Set(); //para ma prevent ang duplicate scans
+
     const reader = document.getElementById("reader");
     const loadingMsg = document.getElementById("loadingMsg");
     const scanAnotherBtn = document.getElementById("scanAnotherBtn");
@@ -52,17 +93,18 @@
 
       const table = document.getElementById("log");
       const row = table.insertRow(-1);
-      row.insertCell(0).textContent = name || "N/A";
+      row.insertCell(0).textContent = name;
       row.insertCell(1).textContent = idNumber;
       row.insertCell(2).textContent = date;
       row.insertCell(3).textContent = time;
 
+      //to Google Sheet
       fetch(SHEETS_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name || "N/A",
+          name: name,
           id: idNumber,
           date: date,
           time: time
@@ -99,20 +141,26 @@
       });
 
       Quagga.onDetected((data) => {
-        const decodedText = data.codeResult.code;
+        const idNumber = data.codeResult.code.trim();
+
+        // Para ma prevent ang multiple detections of the same code
+        if (scannedIds.has(idNumber)) {
+          alert(`ID ${idNumber} has already been scanned!`);
+          return;
+        }
+
+        const name = students[idNumber];
+        if (!name) {
+          alert(`Unknown ID: ${idNumber}. Please check the barcode.`);
+          return;
+        }
+
+        scannedIds.add(idNumber);
         Quagga.stop();
         reader.classList.remove("scanning");
 
-        const name = document.getElementById("nameInput").value.trim();
-        const confirmScan = confirm(`Scanned ID: ${decodedText}\n\nConfirm to save this entry?`);
-
-        if (confirmScan) {
-          addLog(name, decodedText);
-          alert("Scanned successfully!");
-        } else {
-          alert("Scan cancelled.");
-        }
-
+        addLog(name, idNumber);
+        alert(`Scanned: ${name} (${idNumber})`);
         scanAnotherBtn.style.display = "inline-block";
       });
     }
